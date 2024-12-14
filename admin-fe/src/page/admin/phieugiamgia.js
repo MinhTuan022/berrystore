@@ -132,7 +132,7 @@ const AdminPhieuGiamGia = () => {
   console.log('dgd', response);
       if (response.status < 300) {
         toast.success("Cập nhật trạng thái thành công!");
-        getPGG(); // Cập nhật lại danh sách
+        // getPGG(); // Cập nhật lại danh sách
       } else {
         toast.error("Cập nhật thất bại!");
       }
