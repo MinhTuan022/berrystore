@@ -91,18 +91,9 @@ const AdminPhieuGiamGia = () => {
     setPageCount(result.totalPages);
     url = "/api/phieu-giam-gia/all?&size=" + size + "&sort=id,desc&page=";
   };
-  function resetToStartOfYear(dateString) {
-    // Tạo một đối tượng Date từ chuỗi ngày đầu vào
-    const originalDate = new Date(dateString);
-  
-    // Lấy năm từ ngày đầu vào và đặt ngày về đầu năm
-    const startOfYear = new Date(originalDate.getFullYear(), 0, 1, 0, 0, 0);
-  
-    // Chuyển ngày mới thành chuỗi định dạng "YYYY-MM-DDTHH:mm:ss"
-    return startOfYear.toISOString().slice(0, 19);
-  }
+
   const updateTrangThai = async (item) => {
-    console.log('àdsjf', item);
+    console.log("àdsjf", item);
     var user = JSON.parse(localStorage.getItem("user"));
 
     const payload = {
@@ -113,23 +104,25 @@ const AdminPhieuGiamGia = () => {
       donToiThieu: item.donToiThieu,
       soLuong: item.soLuong,
       loaiPhieu: item.loaiPhieu,
-      ngayBatDau: resetToStartOfYear(item.ngayBatDau),
-      ngayKetThuc: resetToStartOfYear(item.ngayKetThuc),
+      ngayBatDau: new Date(item.ngayBatDau),
+      ngayKetThuc: new Date(item.ngayKetThuc),
       nguoiTao: user.maNhanVien,
       nguoiCapNhat: user.maNhanVien,
       trangThai: 0,
-  };
+    };
+
+    // console.log('pay', payload);
     try {
       // Chuẩn bị dữ liệu payload
       const updatedItem = { ...item, trangThai: 0 }; // Thay đổi trạng thái nếu cần
       console.log("Dữ liệu gửi API:", payload);
-  
+
       // Gửi request PUT hoặc PATCH
       const response = await postMethodPayload(
-        `/api/phieu-giam-gia/${item.id}`, 
+        `/api/phieu-giam-gia/${item.id}`,
         payload
       );
-  console.log('dgd', response);
+      console.log("dgd", response);
       if (response.status < 300) {
         toast.success("Cập nhật trạng thái thành công!");
         // getPGG(); // Cập nhật lại danh sách
@@ -141,8 +134,7 @@ const AdminPhieuGiamGia = () => {
       toast.error("Đã xảy ra lỗi trong quá trình cập nhật!");
     }
   };
-  
-  
+
   function handleShowAllClick() {
     setSearchTerm(""); // Đặt lại từ khóa tìm kiếm
     setCurrentPage(0);
@@ -150,24 +142,30 @@ const AdminPhieuGiamGia = () => {
   }
 
   const handlePageClick = async (data) => {
-    var currentPage = data.selected;
-    var response = await getMethod(url + currentPage);
-    var result = await response.json();
+    const currentPage = data.selected;
+    const response = await getMethod(
+      `/api/phieu-giam-gia/all?size=${size}&sort=id,desc&page=${currentPage}`
+    );
+    const result = await response.json();
+    console.log("day", result);
     setItems(result.content);
     setPageCount(result.totalPages);
     setCurrentPage(currentPage);
   };
   useEffect(() => {
     if (items.length === 0) return; // Kiểm tra nếu items trống
-  
+
     const now = new Date();
+    let hasUpdate = false;
     // console.log('now', now);
-  
+
     const updatedItems = items.map((item) => {
       // console.log('idg', item); // Sẽ log từng item nếu items không trống
       const ngayKetThuc = new Date(item.ngayKetThuc);
       if (ngayKetThuc < now && item.trangThai !== 0) {
-        updateTrangThai(item); 
+        updateTrangThai(item);
+        hasUpdate = true;
+
         return {
           ...item,
           trangThai: 0,
@@ -175,11 +173,13 @@ const AdminPhieuGiamGia = () => {
       }
       return item;
     });
-  
-    setItems(updatedItems);
+
+    if (hasUpdate) {
+      setItems(updatedItems); // Cập nhật lại state chỉ khi có thay đổi
+    }
+    // setItems(updatedItems);
   }, [items]);
-  
-  
+
   return (
     <>
       <div class="headerpageadmin d-flex justify-content-between align-items-center p-3 bg-light border">

@@ -390,7 +390,7 @@ function ChiTietSanPham() {
                             <a href={"chitietsanpham?id=" + item.id}>
                               <div className="productimg-container">
                                 <img
-                                  src={item.sanPhamChiTiets[0].anhs[0].tenAnh}
+                                  src={item.sanPhamChiTiets[0]?.anhs[0]?.tenAnh || ""}
                                   class="productimg"
                                 />
                               </div>

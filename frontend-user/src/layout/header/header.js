@@ -36,11 +36,11 @@ function Header() {
   var token = localStorage.getItem("token");
   var authen = (
     <div class="itemiconheader">
-      <div class="icon">
+      {/* <div class="icon">
         <a href="">
           <i className="fa fa-sign-in"></i>
         </a>
-      </div>
+      </div> */}
       <a href="login" class="txtheader">
         <span class="text-bg">Đăng nhập</span>
       </a>

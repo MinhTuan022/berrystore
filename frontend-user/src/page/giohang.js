@@ -124,13 +124,14 @@ function GioHang() {
     var tong = await res.text();
     setTongTam(tong);
     if (voucherSelect != null) {
+      console.log('voucher', voucherSelect);
       var strgiam = "";
       if (voucherSelect.loaiPhieu == true) {
         strgiam = "- " + formatMoney(voucherSelect.giaTriGiam);
         settienGiam(voucherSelect.giaTriGiam);
       } else {
         var giamtien =
-          Number(tong) - Number((tong * voucherSelect.giaTriGiam) / 100);
+          Number((tong * voucherSelect.giaTriGiam) / 100);
         if (giamtien > voucherSelect.giaTriGiamToiDa) {
           giamtien = voucherSelect.giaTriGiamToiDa;
         }

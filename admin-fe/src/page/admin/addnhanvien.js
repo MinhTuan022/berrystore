@@ -15,6 +15,7 @@ const AdminAddNhanVien = () => {
     const [label, setLabel] = useState("Thêm nhân viên");
     const [gender, setGender] = useState(true);
     const [role, setRole] = useState(1);
+    const [newMaNhanVien, setNewMaNhanVien] = useState("");
 
     useEffect(() => {
         const getNhanVien = async () => {
@@ -28,6 +29,19 @@ const AdminAddNhanVien = () => {
                 setGender(result.gioiTinh);
                 setRole(result.vaiTro);
                 linkbanner = result.anh
+            }else {
+                // Tạo mã sản phẩm mới khi thêm sản phẩm
+                try {
+                    const listResponse = await getMethod('/api/nhan-vien/all?size=1000');
+                    const listResult = await listResponse.json();
+                    console.log('sdgshgsdhgshs', listResult);
+
+    
+                    const maMoi = `SP${String(Number(listResult.totalElements) + 1).padStart(3, '0')}`;
+                    setItem(prev => ({ ...prev, maNhanVien: maMoi }));
+                } catch (error) {
+                    toast.error("Không thể tạo mã sản phẩm mới.");
+                }
             }
         };
         getNhanVien();
@@ -159,11 +173,11 @@ const AdminAddNhanVien = () => {
             nguoiCapNhat: user.maNhanVien,
             trangThai: 1,
         };
-        if (item != null) {
+        if (item.hoVaTen != null) {
             payload.nguoiTao = item.nguoiTao
         }
         var url = '/api/nhan-vien';
-        if (item != null) {
+        if (item.hoten != null) {
             url += '/' + item.id
         }
         const res = await postMethodPayload(url, payload)
