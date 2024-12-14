@@ -18,7 +18,7 @@ var size = 8;
 var url = "";
 const AdminDonHang = () => {
   const [trangThai, setTrangThai] = useState([]);
-  const [selectTrangThai, setSelectTrangThai] = useState(null);
+  const [selectTrangThai, setSelectTrangThai] = useState(0);
   const [pageCount, setpageCount] = useState(0);
   const [items, setItems] = useState([]);
   const [item, setItem] = useState(null);
@@ -40,12 +40,14 @@ const AdminDonHang = () => {
     url = "/api/v1/hoa-don/all?&size=" + size + "&sort=id,desc&page=";
   };
 
-  const locDonHang = async () => {
+  const locDonHang = async (value) => {
+    if (value) setSelectTrangThai(value);
+
     var response = await getMethod(
       "/api/v1/hoa-don/all?&size=" +
         size +
         "&sort=id,desc&trangthai=" +
-        selectTrangThai.value +
+        value +
         "&page=" +
         0
     );
@@ -57,7 +59,7 @@ const AdminDonHang = () => {
       "/api/v1/hoa-don/all?&size=" +
       size +
       "&sort=id,desc&trangthai=" +
-      selectTrangThai.value +
+      value +
       "&page=";
   };
 
@@ -197,7 +199,21 @@ const AdminDonHang = () => {
         </strong>
         <div class="search-wrapper d-flex align-items-center">
           <div className="d-flex divngayadmin">
-            <Select
+            <div className="trangthailist">
+              {trangThai &&
+                trangThai.map((a, index) => (
+                  <div
+                    onClick={() => locDonHang(a.value)}
+                    className={`trangthaiitem ${
+                      a.value === selectTrangThai && "selected"
+                    }`}
+                  >
+                    {a.tenTrangThai}
+                  </div>
+                ))}
+            </div>
+
+            {/* <Select
               className="select-container ms-2"
               options={trangThai}
               value={selectTrangThai}
@@ -206,11 +222,12 @@ const AdminDonHang = () => {
               getOptionValue={(option) => option.value}
               name="trangthai"
               placeholder="Chọn trạng thái"
-            />
+            /> */}
           </div>
-          <button onClick={() => locDonHang()} class="btn btn-primary ms-2">
+
+          {/* <button onClick={() => locDonHang()} class="btn btn-primary ms-2">
             <i className="fa fa-filter"></i> Lọc
-          </button>
+          </button> */}
           <a href="add-product" class="btn btn-primary ms-2">
             <i className="fa fa-plus"></i>
           </a>
@@ -219,7 +236,7 @@ const AdminDonHang = () => {
             onClick={() => exportToExcel()}
             class="btn btn-primary ms-2"
           >
-            <i className="fa fa-excel-o"></i> xuất file
+            <i className="fa fa-file-excel"></i>
           </a>
         </div>
       </div>

@@ -2,17 +2,21 @@ import { useState, useEffect } from "react";
 import ReactPaginate from "react-paginate";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {getMethod, postMethodPayload, deleteMethod,} from "../../services/request";
+import {
+  getMethod,
+  postMethodPayload,
+  deleteMethod,
+} from "../../services/request";
 import { formatMoney } from "../../services/money";
 import Swal from "sweetalert2";
 import * as XLSX from "xlsx";
-import { saveAs } from 'file-saver';
+import { saveAs } from "file-saver";
 
-var size = 5
-var url = '/api/phieu-giam-gia/all?&size='+size+'&sort=id,desc&page=';
+var size = 5;
+var url = "/api/phieu-giam-gia/all?&size=" + size + "&sort=id,desc&page=";
 const AdminPhieuGiamGia = () => {
   const [items, setItems] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const [pageCount, setPageCount] = useState(0);
   useEffect(() => {
@@ -36,7 +40,7 @@ const AdminPhieuGiamGia = () => {
       reverseButtons: true,
     }).then(async (result) => {
       if (result.isConfirmed) {
-        const response = await deleteMethod('/api/phieu-giam-gia/' + id);
+        const response = await deleteMethod("/api/phieu-giam-gia/" + id);
         if (response.status < 300) {
           toast.success("Xóa thành công!");
           getPhieuGiamGia(); // Hàm cập nhật dữ liệu sau khi xóa
@@ -55,12 +59,12 @@ const AdminPhieuGiamGia = () => {
   const exportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(items);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
     const excelBuffer = XLSX.write(workbook, {
-      bookType: 'xlsx',
-      type: 'array',
+      bookType: "xlsx",
+      type: "array",
     });
-    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(blob, `PhieuGiamGia.xlsx`);
   };
 
@@ -77,30 +81,105 @@ const AdminPhieuGiamGia = () => {
     }
   }
 
-  const getPGG = async() =>{
-    var response = await getMethod('/api/phieu-giam-gia/all?&size='+size+'&sort=id,desc&page='+0)
+  const getPGG = async () => {
+    var response = await getMethod(
+      "/api/phieu-giam-gia/all?&size=" + size + "&sort=id,desc&page=" + 0
+    );
     var result = await response.json();
     console.log(result);
-    setItems(result.content)
-    setPageCount(result.totalPages)
-    url = '/api/phieu-giam-gia/all?&size='+size+'&sort=id,desc&page='
+    setItems(result.content);
+    setPageCount(result.totalPages);
+    url = "/api/phieu-giam-gia/all?&size=" + size + "&sort=id,desc&page=";
   };
+  function resetToStartOfYear(dateString) {
+    // Tạo một đối tượng Date từ chuỗi ngày đầu vào
+    const originalDate = new Date(dateString);
+  
+    // Lấy năm từ ngày đầu vào và đặt ngày về đầu năm
+    const startOfYear = new Date(originalDate.getFullYear(), 0, 1, 0, 0, 0);
+  
+    // Chuyển ngày mới thành chuỗi định dạng "YYYY-MM-DDTHH:mm:ss"
+    return startOfYear.toISOString().slice(0, 19);
+  }
+  const updateTrangThai = async (item) => {
+    console.log('àdsjf', item);
+    var user = JSON.parse(localStorage.getItem("user"));
 
+    const payload = {
+      maCode: item.maCode,
+      tenPhieu: item.tenPhieu,
+      giaTriGiamToiDa: item.giaTriGiamToiDa,
+      giaTriGiam: item.giaTriGiam,
+      donToiThieu: item.donToiThieu,
+      soLuong: item.soLuong,
+      loaiPhieu: item.loaiPhieu,
+      ngayBatDau: resetToStartOfYear(item.ngayBatDau),
+      ngayKetThuc: resetToStartOfYear(item.ngayKetThuc),
+      nguoiTao: user.maNhanVien,
+      nguoiCapNhat: user.maNhanVien,
+      trangThai: 0,
+  };
+    try {
+      // Chuẩn bị dữ liệu payload
+      const updatedItem = { ...item, trangThai: 0 }; // Thay đổi trạng thái nếu cần
+      console.log("Dữ liệu gửi API:", payload);
+  
+      // Gửi request PUT hoặc PATCH
+      const response = await postMethodPayload(
+        `/api/phieu-giam-gia/${item.id}`, 
+        payload
+      );
+  console.log('dgd', response);
+      if (response.status < 300) {
+        toast.success("Cập nhật trạng thái thành công!");
+        getPGG(); // Cập nhật lại danh sách
+      } else {
+        toast.error("Cập nhật thất bại!");
+      }
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái:", error);
+      toast.error("Đã xảy ra lỗi trong quá trình cập nhật!");
+    }
+  };
+  
+  
   function handleShowAllClick() {
-    setSearchTerm(''); // Đặt lại từ khóa tìm kiếm
+    setSearchTerm(""); // Đặt lại từ khóa tìm kiếm
     setCurrentPage(0);
     getPGG(); // Lấy lại toàn bộ dữ liệu
   }
 
-  const handlePageClick = async (data)=>{
-    var currentPage = data.selected
-    var response = await getMethod(url+currentPage)
+  const handlePageClick = async (data) => {
+    var currentPage = data.selected;
+    var response = await getMethod(url + currentPage);
     var result = await response.json();
-    setItems(result.content)
-    setPageCount(result.totalPages)
+    setItems(result.content);
+    setPageCount(result.totalPages);
     setCurrentPage(currentPage);
-  }
-
+  };
+  useEffect(() => {
+    if (items.length === 0) return; // Kiểm tra nếu items trống
+  
+    const now = new Date();
+    // console.log('now', now);
+  
+    const updatedItems = items.map((item) => {
+      // console.log('idg', item); // Sẽ log từng item nếu items không trống
+      const ngayKetThuc = new Date(item.ngayKetThuc);
+      if (ngayKetThuc < now && item.trangThai !== 0) {
+        updateTrangThai(item); 
+        return {
+          ...item,
+          trangThai: 0,
+        };
+      }
+      return item;
+    });
+  
+    setItems(updatedItems);
+  }, [items]);
+  
+  
   return (
     <>
       <div class="headerpageadmin d-flex justify-content-between align-items-center p-3 bg-light border">
@@ -112,11 +191,19 @@ const AdminPhieuGiamGia = () => {
           <a href="add-khuyen-mai" class="btn btn-primary ms-2">
             <i className="fa fa-plus"></i>
           </a>
-          <button className="btn btn-secondary ms-2" onClick={handleShowAllClick}>
+          <button
+            className="btn btn-secondary ms-2"
+            onClick={handleShowAllClick}
+          >
             <i className="fa fa-list"></i> Làm mới
           </button>
-          <a href='#' onClick={() => exportToExcel()} className="btn btn-success ms-2">
-            <i className='fa fa-excel-o'></i>Excel</a>
+          <a
+            href="#"
+            onClick={() => exportToExcel()}
+            className="btn btn-success ms-2"
+          >
+            <i className="fa fa-excel-o"></i>Excel
+          </a>
         </div>
       </div>
       <div class="tablediv">
@@ -126,33 +213,37 @@ const AdminPhieuGiamGia = () => {
         <div class="divcontenttable">
           <table id="example" class="table table-bordered">
             <thead>
-            <tr>
-              <th>STT</th>
-              <th>Mã code</th>
-              <th>Tên phiếu</th>
-              <th>Giảm tối đa</th>
-              <th>Giá trị giảm</th>
-              <th>Đơn tối thiểu</th>
-              <th>Số lượng</th>
-              <th>Loại phiếu</th>
-              <th>Thời gian</th>
-              <th>Trạng thái</th>
-              <th class="sticky-col">Hành động</th>
-            </tr>
+              <tr>
+                <th>STT</th>
+                <th>Mã code</th>
+                <th>Tên phiếu</th>
+                <th>Giảm tối đa</th>
+                <th>Giá trị giảm</th>
+                <th>Đơn tối thiểu</th>
+                <th>Số lượng</th>
+                <th>Loại phiếu</th>
+                <th>Thời gian</th>
+                <th>Trạng thái</th>
+                <th class="sticky-col">Hành động</th>
+              </tr>
             </thead>
             <tbody>
-            {items.map((item,index) => {
-              const stt = currentPage * size + index + 1;
-              return (
+              {items.map((item, index) => {
+                const stt = currentPage * size + index + 1;
+                return (
                   <tr>
                     <td>{stt}</td>
                     <td>{item.maCode}</td>
                     <td>{item.tenPhieu}</td>
-                    <td>{item.loaiPhieu == false? formatMoney(item.giaTriGiamToiDa) : ""}</td>
+                    <td>
+                      {item.loaiPhieu == false
+                        ? formatMoney(item.giaTriGiamToiDa)
+                        : ""}
+                    </td>
                     <td>
                       {item.loaiPhieu == true
-                          ? formatMoney(item.giaTriGiam)
-                          : item.giaTriGiam + "%"}
+                        ? formatMoney(item.giaTriGiam)
+                        : item.giaTriGiam + "%"}
                     </td>
                     <td>{formatMoney(item.donToiThieu)}</td>
                     <td>{item.soLuong}</td>
@@ -161,14 +252,23 @@ const AdminPhieuGiamGia = () => {
                       {item.ngayBatDau} - {item.ngayKetThuc}
                     </td>
                     <td
-                        style={{
-                          textAlign: "center",
-                          color: item.trangThai === 0 ? "#6c757d" : "#155724", // Xám đậm hoặc Xanh đậm
-                        }}
+                      style={{
+                        textAlign: "center",
+                        color: item.trangThai === 0 ? "#6c757d" : "#155724", // Xám đậm hoặc Xanh đậm
+                      }}
                     >
-                      {item.trangThai === 0 ? "Không hoạt động" : "Đang hoạt động"}
+                      {item.trangThai === 0
+                        ? "Không hoạt động"
+                        : "Đang hoạt động"}
                     </td>
-                    <td class="sticky-col" style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                    <td
+                      class="sticky-col"
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
                       <a href={"add-khuyen-mai?id=" + item.id} class="edit-btn">
                         <i className="fa fa-edit"></i>
                       </a>
@@ -180,28 +280,34 @@ const AdminPhieuGiamGia = () => {
                       {/*</button>*/}
                     </td>
                   </tr>
-              );
-            })}
+                );
+              })}
             </tbody>
           </table>
-          <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
             <ReactPaginate
-                marginPagesDisplayed={2}
-                pageCount={pageCount}
-                onPageChange={handlePageClick}
-                containerClassName={'pagination'}
-                pageClassName={'page-item'}
-                pageLinkClassName={'page-link'}
-                previousClassName='page-item'
-                previousLinkClassName='page-link'
-                nextClassName='page-item'
-                nextLinkClassName='page-link'
-                breakClassName='page-item'
-                breakLinkClassName='page-link'
-                previousLabel='Trang trước'
-                nextLabel='Trang sau'
-                activeClassName='active'
-                forcePage={currentPage}
+              marginPagesDisplayed={2}
+              pageCount={pageCount}
+              onPageChange={handlePageClick}
+              containerClassName={"pagination"}
+              pageClassName={"page-item"}
+              pageLinkClassName={"page-link"}
+              previousClassName="page-item"
+              previousLinkClassName="page-link"
+              nextClassName="page-item"
+              nextLinkClassName="page-link"
+              breakClassName="page-item"
+              breakLinkClassName="page-link"
+              previousLabel="Trang trước"
+              nextLabel="Trang sau"
+              activeClassName="active"
+              forcePage={currentPage}
             />
           </div>
         </div>

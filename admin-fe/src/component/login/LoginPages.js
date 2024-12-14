@@ -46,6 +46,7 @@ const LoginPages = () => {
 
 
   async function handleLogin(event) {
+    console.log('ldhtngksjdhg', );
     event.preventDefault();
     const payload = {
         email: event.target.elements.email.value,

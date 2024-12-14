@@ -26,6 +26,7 @@ const AdminAddPhieuGiamGia = () => {
                 var response = await getMethod("/api/phieu-giam-gia/" + id);
                 var result = await response.json();
                 setItem(result);
+                console.log('result', result);
             }
         };
         getPhieuGiamGia();
@@ -146,7 +147,7 @@ const AdminAddPhieuGiamGia = () => {
         }
 
         const res = await postMethodPayload(url, payload);
-
+console.log('fuck', res);
         if (res.status < 300) {
             toast.success("Success!");
             await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -274,7 +275,8 @@ const AdminAddPhieuGiamGia = () => {
                         <label className="lb-form">Trạng thái</label>
                         <select
                             name="trangThai"
-                            defaultValue={item?.trangThai}
+                            value={item?.trangThai?.toString()}
+                            // defaultValue={item?.trangThai?.toString()}
                             className="form-control"
                         >
                             <option value="1">Đang hoạt động</option>

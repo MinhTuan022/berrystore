@@ -30,6 +30,7 @@ import Swal from 'sweetalert2'
         email: event.target.elements.email.value,
         password: event.target.elements.password.value,
     };
+    console.log('pá', payload);
     const res = await postMethodPayload('/api/v1/auth/public/login', payload);
     
     var result = await res.json()

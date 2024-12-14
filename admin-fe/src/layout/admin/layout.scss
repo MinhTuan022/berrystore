@@ -342,6 +342,39 @@
 .divngayadmin{
     margin-left: 10px;
 }
+.trangthailist{
+    // width: 100%;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: repeat(1, 1fr);
+    grid-template-columns: repeat(8, 1fr);
+
+    gap: 10px;
+}
+.trangthaiitem{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: rgb(0, 0, 0);
+    box-sizing: border-box;
+    padding:10px 7px;
+    border-radius: 8px;
+    font-size: 11px;
+    cursor: pointer;
+    border:1px solid #0d6efd;
+
+    &.selected{
+        background-color: #0b5ed7;
+        color: white;
+    }
+}
+
+.trangthaiitem:hover{
+    background-color: #0b5ed7;
+    color: white;
+
+}
 .divngayadmin input{
     margin-left: 5px;
     border-radius: 5px;
