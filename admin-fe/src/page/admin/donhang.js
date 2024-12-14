@@ -265,6 +265,7 @@ const AdminDonHang = () => {
             </thead>
             <tbody>
               {items.map((item) => {
+                console.log('donhang', item);
                 return (
                   <tr>
                     <td
@@ -297,7 +298,7 @@ const AdminDonHang = () => {
                         : item.khachHang.soDienThoai}
                     </td>
                     <td>
-                      {item.khachHang === null ? "" : item.khachHang.diaChi}
+                      {item.khachHang === null ? "" : item.diaChi}
                     </td>
                     <td>{formatMoney(item.tongTien)}</td>
                     <td>{formatMoney(item.phiVanChuyen)}</td>

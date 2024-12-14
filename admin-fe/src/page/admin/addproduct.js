@@ -261,7 +261,7 @@ const AdminAddProduct = () => {
                   placeholder="Chọn đế giày"
                 />
               </div>
-              {/* <div class="modal-body">
+              <div class="modal-body">
                 <form
                   class="col-sm-5 marginauto"
                   // onSubmit={saveData}
@@ -338,7 +338,7 @@ const AdminAddProduct = () => {
                     Xác nhận
                   </button>
                 </form>
-              </div> */}
+              </div>
             </form>
           </div>
         </div>

@@ -52,7 +52,7 @@ const AdminAddPhieuGiamGia = () => {
       nguoiCapNhat: user.maNhanVien,
       trangThai: event.target.elements.trangThai.value,
     };
-
+console.log('pgg', payload);
     // Kiểm tra các trường không được trống
     if (!payload.maCode) {
       toast.error("Mã code không được để trống.");
@@ -134,9 +134,6 @@ const AdminAddPhieuGiamGia = () => {
       toast.warning(
         "Ngày kết thúc đã qua, phiếu giảm giá sẽ tự động ngừng hoạt động."
       );
-    } else {
-      // Nếu ngày kết thúc chưa đến, đảm bảo phiếu giảm giá đang hoạt động
-      payload.trangThai = 1; // Đang hoạt động
     }
 
     console.log(payload); // Kiểm tra payload
@@ -152,7 +149,7 @@ const AdminAddPhieuGiamGia = () => {
     }
 
     const res = await postMethodPayload(url, payload);
-    console.log("fuck", res);
+
     if (res.status < 300) {
       toast.success("Success!");
       await new Promise((resolve) => setTimeout(resolve, 1000));

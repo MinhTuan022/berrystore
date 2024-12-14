@@ -162,7 +162,7 @@ const AdminPhieuGiamGia = () => {
     const updatedItems = items.map((item) => {
       // console.log('idg', item); // Sẽ log từng item nếu items không trống
       const ngayKetThuc = new Date(item.ngayKetThuc);
-      if (ngayKetThuc < now && item.trangThai !== 0) {
+      if (ngayKetThuc < now && item.trangThai !== 0 ) {
         updateTrangThai(item);
         hasUpdate = true;
 

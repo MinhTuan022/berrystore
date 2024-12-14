@@ -73,6 +73,7 @@ function GioHang() {
   const getVoucher = async () => {
     var response = await getMethod("/api/phieu-giam-gia/kha-dung");
     var list = await response.json();
+    console.log('khadung', list);
     setVoucher(list);
   };
 
@@ -355,7 +356,7 @@ function GioHang() {
                         (option.loaiPhieu == true
                           ? formatMoney(option.giaTriGiam)
                           : option.giaTriGiam + "%") +
-                        ", tối thiểu " +
+                        ", Đơn tối thiểu " +
                         formatMoney(option.donToiThieu)
                       }
                       getOptionValue={(option) => option.id}
