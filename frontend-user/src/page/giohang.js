@@ -17,6 +17,7 @@ import Select from "react-select";
 import { toast } from "react-toastify";
 import iconvnpay from "../assest/images/Icon-VNPAY.png";
 import deliver from "../assest/images/delivery.png";
+import TermsPopup from "./dieukhoan";
 
 var size = 15;
 var url = "";
@@ -34,6 +35,7 @@ function GioHang() {
   const [textGiamGia, settextGiamGia] = useState("");
   const [phiShip, setPhiShip] = useState(0);
   const [tienGiam, settienGiam] = useState(0);
+  const [isTerm, setIsTerm] = useState(false);
 
   useEffect(() => {
     getGioHang();
@@ -73,7 +75,7 @@ function GioHang() {
   const getVoucher = async () => {
     var response = await getMethod("/api/phieu-giam-gia/kha-dung");
     var list = await response.json();
-    console.log('khadung', list);
+    console.log("khadung", list);
     setVoucher(list);
   };
 
@@ -118,6 +120,14 @@ function GioHang() {
       toast.error("Hãy chọn ít nhất 1 sản phẩm");
       return;
     }
+    if (phuongthuctt == null) {
+      toast.error("Hãy chọn phương thức thanh toán");
+      return;
+    }
+    if (!isTerm) {
+      toast.error("Vui lòng đồng ý với điều khoản và chính sách của chúng tôi");
+      return;
+    }
     var res = await postMethodPayload(
       "/api/gio-hang/tinh-tong",
       selectedValues
@@ -125,14 +135,13 @@ function GioHang() {
     var tong = await res.text();
     setTongTam(tong);
     if (voucherSelect != null) {
-      console.log('voucher', voucherSelect);
+      console.log("voucher", voucherSelect);
       var strgiam = "";
       if (voucherSelect.loaiPhieu == true) {
         strgiam = "- " + formatMoney(voucherSelect.giaTriGiam);
         settienGiam(voucherSelect.giaTriGiam);
       } else {
-        var giamtien =
-          Number((tong * voucherSelect.giaTriGiam) / 100);
+        var giamtien = Number((tong * voucherSelect.giaTriGiam) / 100);
         if (giamtien > voucherSelect.giaTriGiamToiDa) {
           giamtien = voucherSelect.giaTriGiamToiDa;
         }
@@ -189,7 +198,7 @@ function GioHang() {
         payload
       );
       if (res.status < 300) {
-        toast.success("Success!");
+        toast.success("Đặ hàng thành công!");
         await new Promise((resolve) => setTimeout(resolve, 1000));
         window.location.href = "/taikhoan";
       } else {
@@ -226,6 +235,14 @@ function GioHang() {
       toast.warning(result.defaultMessage);
     }
   }
+
+  const handleCheckTerm = (e) => {
+    setIsTerm(e);
+  };
+
+  const handleAgreeTerm = (e) => {
+    setIsTerm(e);
+  };
 
   return (
     <div class="maincontentweb">
@@ -417,10 +434,35 @@ function GioHang() {
                       </div>{" "}
                     </td>
                   </tr>
+                  <tr>
+                    <tr>
+                      <th>
+                        <input
+                          checked={isTerm}
+                          type="checkbox"
+                          onChange={(e) => handleCheckTerm(e.target.checked)}
+                        ></input>
+                      </th>
+                      <td>
+                        <TermsPopup onAgreeTerm={handleAgreeTerm} />
+                      </td>
+                    </tr>
+                  </tr>
                 </table>
                 <button
                   onClick={() => kiemTraThanhToan()}
-                  data-bs-toggle="modal"
+                  data-bs-toggle={
+                    Array.from(
+                      document.querySelectorAll(
+                        'input[name="sanphamchitiet"]:checked'
+                      )
+                    ).map((checkbox) => checkbox.value).length &&
+                    isTerm &&
+                    selectDiaChi &&
+                    phuongthuctt
+                      ? "modal"
+                      : ""
+                  }
                   data-bs-target="#modaladd"
                   class="form-control btndathang"
                 >
@@ -471,11 +513,14 @@ function GioHang() {
                     <th>Phương thức thanh toán</th>
                     <td>{phuongthuctt}</td>
                   </tr>
+
                   <tr>
                     <th>Tổng tiền thanh toán</th>
                     <td>
                       {formatMoney(
-                        Number(tongTam) + Number(phiShip) - Number(tienGiam)
+                        Number(tongTam) + Number(phiShip) - Number(tienGiam) < 0
+                          ? 0
+                          : Number(tongTam) + Number(phiShip) - Number(tienGiam)
                       )}
                     </td>
                   </tr>

@@ -136,7 +136,7 @@ function ChiTietSanPham() {
       `/api/gio-hang/add?idChiTietSanPham=${selectChiTiet.id}&soLuong=${sl}`
     );
     if (res.status < 300) {
-      toast.success("Success!");
+      toast.success("Đã thêm sản phẩm vào giỏ gàng!");
     }
     if (res.status == 417) {
       var result = await res.json();
