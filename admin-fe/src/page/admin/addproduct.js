@@ -150,7 +150,7 @@ const AdminAddProduct = () => {
 
     // Xử lý phản hồi
     if (res.status < 300) {
-      toast.success("Thành công!");
+      toast.success("Thêm Sản Phẩm Thành công!");
       await new Promise((resolve) => setTimeout(resolve, 1000));
       window.location.href = "product";
     } else if (res.status === 417) {
@@ -261,7 +261,7 @@ const AdminAddProduct = () => {
                   placeholder="Chọn đế giày"
                 />
               </div>
-              <div class="modal-body">
+              {/* <div class="modal-body">
                 <form
                   class="col-sm-5 marginauto"
                   // onSubmit={saveData}
@@ -338,7 +338,7 @@ const AdminAddProduct = () => {
                     Xác nhận
                   </button>
                 </form>
-              </div>
+              </div> */}
             </form>
           </div>
         </div>

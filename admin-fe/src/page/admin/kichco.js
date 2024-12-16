@@ -84,7 +84,7 @@ const AdminKichCo= ()=>{
         const res = await postMethodPayload(url, payload);
 
         if (res.status < 300) {
-            toast.success('Thành công!');
+            toast.success('Thêm Kích Cỡ Thành Công!');
             await new Promise(resolve => setTimeout(resolve, 1000));
             window.location.reload();
         }

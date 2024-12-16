@@ -75,7 +75,7 @@ const AdminMauSac= ()=>{
 
             if (res.status < 300) {
 
-                toast.success('Thành công!');
+                toast.success('Thêm Màu Sắc Thành Công!');
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 window.location.reload();
             } else if (res.status === 417) {

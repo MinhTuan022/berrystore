@@ -62,7 +62,7 @@ const AdminAddDotGiamGia = ()=>{
         
         const res = await postMethodPayload('/api/dot-giam-gia', payload)
         if(res.status < 300){
-            toast.success('Success!');
+            toast.success('Thêm Đợt Giảm Giá Thành Công!');
             await new Promise(resolve => setTimeout(resolve, 1000));
             window.location.href = 'dot-giam-gia'
         }

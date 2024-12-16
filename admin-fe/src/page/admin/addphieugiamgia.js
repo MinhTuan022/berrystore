@@ -151,7 +151,7 @@ console.log('pgg', payload);
     const res = await postMethodPayload(url, payload);
 
     if (res.status < 300) {
-      toast.success("Success!");
+      toast.success("Thêm Phiếu Giảm Giá Thành Công!");
       await new Promise((resolve) => setTimeout(resolve, 1000));
       window.location.href = "khuyen-mai";
     }

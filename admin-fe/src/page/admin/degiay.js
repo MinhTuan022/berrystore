@@ -65,7 +65,7 @@ const AdminDeGiay = ()=>{
 
         const res = await postMethodPayload(url, payload);
         if (res.status < 300) {
-            toast.success('Success!');
+            toast.success('Thêm Đế Giày Thành Công!');
             await new Promise(resolve => setTimeout(resolve, 1000));
             window.location.reload();
         }
