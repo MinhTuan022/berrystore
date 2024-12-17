@@ -46,15 +46,15 @@ public class PhieuGiamGiaController {
         return phieuGiamGia.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
     @GetMapping("/all")
-    public ResponseEntity<?> findAll(Pageable pageable, @RequestParam(required = false) Integer trangthai){
-        Page<PhieuGiamGia> page = null;
-        if(trangthai == null){
-            page = phieuGiamGiaRepository.findAll(pageable);
-        }
-        else{
-            page = phieuGiamGiaRepository.findByTrangThai(trangthai, pageable);
-        }
-        return new ResponseEntity<>(page, HttpStatus.OK);
+    public ResponseEntity<?> findAll(Pageable pageable){
+        Page<PhieuGiamGia> page = phieuGiamGiaRepository.findAll(pageable);
+//        if(trangthai == null){
+
+//        }
+//        else{
+//            page = phieuGiamGiaRepository.findByTrangThai(trangthai, pageable);
+//        }
+        return ResponseEntity.ok(page);
     }
 
     // Tạo mới phiếu giảm giá
@@ -67,9 +67,9 @@ public class PhieuGiamGiaController {
     // Cập nhật phiếu giảm giá
     @PostMapping("/{id}")
     public ResponseEntity<PhieuGiamGia> updatePhieuGiamGia(@PathVariable Integer id, @RequestBody PhieuGiamGiaRequest requestDTO) {
-        if (requestDTO.getLoaiPhieu()) {
-            requestDTO.setGiaTriGiam(0);
-        }
+//        if (requestDTO.getLoaiPhieu()) {
+//            requestDTO.setGiaTriGiam(0);
+//        }
         PhieuGiamGia updatedPhieuGiamGia = phieuGiamGiaService.update(id, requestDTO);
         return updatedPhieuGiamGia != null ? ResponseEntity.ok(updatedPhieuGiamGia) : ResponseEntity.notFound().build();
     }

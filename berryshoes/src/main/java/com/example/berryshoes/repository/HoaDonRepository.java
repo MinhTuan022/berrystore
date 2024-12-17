@@ -92,4 +92,24 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Integer> {
             "FROM HoaDon\n" +
             "WHERE Month(ngayTao) = ?1 and year(ngayTao) = ?2 and trangThai = 8", nativeQuery = true)
     Double tinhDoanhThuAdmin(int i, Integer nam);
+
+    @Query(value = "SELECT DATEPART(HOUR, ngayTao) AS Gio, SUM(tongTien) AS DoanhThu " +
+            "FROM HoaDon " +
+            "WHERE CAST(ngayTao AS DATE) = CAST(GETDATE() AS DATE) " +
+            "AND trangThai = 8 " +
+            "GROUP BY DATEPART(HOUR, ngayTao) " +
+            "ORDER BY Gio", nativeQuery = true)
+    List<Object[]> tinhDoanhThuTheoGioTrongNgay();
+
+
+    @Query(value = "SELECT DATEPART(WEEKDAY, ngayTao) AS Thu, SUM(tongTien) AS DoanhThu " +
+            "FROM HoaDon " +
+            "WHERE DATEPART(WEEK, ngayTao) = DATEPART(WEEK, GETDATE()) " +
+            "AND YEAR(ngayTao) = YEAR(GETDATE()) " +
+            "AND trangThai = 8 " +
+            "GROUP BY DATEPART(WEEKDAY, ngayTao)", nativeQuery = true)
+    List<Object[]> tinhDoanhThuTheoThuTrongTuan();
+
+
+
 }

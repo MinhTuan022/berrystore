@@ -64,4 +64,14 @@ public class ThongKeController {
         return list;
     }
 
+    @GetMapping("/admin/doanhthungay")
+    public List<Object[]> getDoanhThuTheoGioTrongNgay() {
+        return hoaDonRepository.tinhDoanhThuTheoGioTrongNgay();
+    }
+
+    @GetMapping("/admin/doanhthuthutrongtuan")
+    public List<Object[]> getDoanhThuTheoThuTrongTuan() {
+        return hoaDonRepository.tinhDoanhThuTheoThuTrongTuan();
+    }
+
 }

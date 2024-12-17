@@ -241,6 +241,7 @@ public class HoaDonController {
         Integer phiShip = (Integer) data.get("service_fee");
         tong = tong + phiShip - tienGiam;
 
+        tong = Math.max(tong, 0);
         HoaDon hoaDon = new HoaDon();
         hoaDon.setMaHoaDon(String.valueOf(System.currentTimeMillis()));
         hoaDon.setLoaiHoaDon(true);

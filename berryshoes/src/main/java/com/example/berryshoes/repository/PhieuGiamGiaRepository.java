@@ -43,8 +43,11 @@ public interface PhieuGiamGiaRepository extends JpaRepository<PhieuGiamGia, Inte
     @Query("SELECT p FROM PhieuGiamGia p where p.kieuPhieu=?1 and p.trangThai=?2")
     List<PhieuGiamGia> findAllByKieuphieuaAndTrangthais(Boolean kieuphieu, Integer trangthai);
 
-    @Query("SELECT p FROM PhieuGiamGia p where current_date between p.ngayBatDau and p.ngayKetThuc and p.soLuong > 0")
+    @Query("SELECT p FROM PhieuGiamGia p WHERE CAST(GETDATE() AS DATE) BETWEEN CAST(p.ngayBatDau AS DATE) AND CAST(p.ngayKetThuc AS DATE) AND p.soLuong > 0 AND p.trangThai = 1")
     List<PhieuGiamGia> khaDung();
+
+
+
 
     @Query("select p from PhieuGiamGia p where p.trangThai = ?1")
     Page<PhieuGiamGia> findByTrangThai(Integer trangthai, Pageable pageable);
