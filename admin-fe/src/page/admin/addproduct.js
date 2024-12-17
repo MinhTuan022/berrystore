@@ -116,7 +116,7 @@ const AdminAddProduct = () => {
       nguoiTao: user.maNhanVien,
       nguoiCapNhat: user.maNhanVien,
       trangThai: parseInt(trangThai), // Đảm bảo chuyển thành số hoặc null
-      giaBan: isNaN(giaBan) ? null : giaBan,
+      giaBan: giaBan,
       anh: linkbanner || null,
     };
     console.log("push", payload);
@@ -161,6 +161,7 @@ const AdminAddProduct = () => {
       toast.error(result.message);
     }
   }
+  console.log('products', product);
 
   return (
     <div>
@@ -177,19 +178,19 @@ const AdminAddProduct = () => {
                 <label class="lb-form">Mã sản phẩm</label>
                 <input
                   name="masp"
-                  value={product.maSanPham || ""}
+                  value={product?.maSanPham || ""}
                   class="form-control"
                 />
                 <label class="lb-form">Tên sản phẩm</label>
                 <input
                   name="tensp"
-                  defaultValue={product.tenSanPham || ""}
+                  defaultValue={product?.tenSanPham || ""}
                   class="form-control"
                 />
                 <label class="lb-form">Giá bán</label>
                 <input
                   name="giaBan"
-                  defaultValue={product.giaBan || ""}
+                  defaultValue={product?.sanPhamChiTiets?.[0]?.giaTien || 0}
                   class="form-control"
                 />
                 <label className="lb-form">Trạng thái</label>

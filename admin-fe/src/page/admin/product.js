@@ -133,10 +133,9 @@ const AdminProduct = () => {
             <thead>
               <tr>
                 <th>STT</th>
-                <th>Ảnh</th>
                 <th>Mã sản phẩm</th>
                 <th>Tên sản phẩm</th>
-                {/*<th>Giá bán</th>*/}
+                {/* <th>Giá bán</th> */}
                 <th>Thương hiệu</th>
                 <th>Chất liệu</th>
                 <th>Đế giày</th>
@@ -152,12 +151,10 @@ const AdminProduct = () => {
                 return (
                   <tr>
                     <td>{stt}</td>
-                    <td>
-                      <img src={item.anh} className="imgtable" />
-                    </td>
+           
                     <td>{item.maSanPham}</td>
                     <td>{item.tenSanPham}</td>
-                    {/*<td>{item.giaBan}</td>*/}
+                    {/* <td>{item.giaBan}</td> */}
                     <td>{item.thuongHieu?.tenThuongHieu}</td>
                     <td>{item.chatLieu?.tenChatLieu}</td>
                     <td>{item.deGiay?.tenDeGiay}</td>
@@ -169,7 +166,7 @@ const AdminProduct = () => {
                         <i className="fa fa-edit"></i>
                       </a>
                       <a
-                        target="_blank"
+                        // target="_blank"
                         href={"sanphamchitiet?sanpham=" + item.id}
                         class="edit-btn"
                       >

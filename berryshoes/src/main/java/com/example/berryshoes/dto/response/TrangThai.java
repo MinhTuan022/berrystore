@@ -22,8 +22,8 @@ public class TrangThai {
 
     public static List<TrangThai> initTrangThais(){
         List<TrangThai> list = new ArrayList<TrangThai>();
-        list.add(new TrangThai(1, "Đang chờ xác nhận"));
-        list.add(new TrangThai(2, "Đã xác nhận đơn hàng"));
+        list.add(new TrangThai(1, "Chờ xác nhận"));
+        list.add(new TrangThai(2, "Đã xác nhận"));
         list.add(new TrangThai(3, "Đang chờ đơn vị vận chuyển"));
         list.add(new TrangThai(4, "Đơn hàng đã được gửi đi"));
         list.add(new TrangThai(5, "Đã nhận"));

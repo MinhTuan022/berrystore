@@ -57,6 +57,7 @@ function GioHang() {
   };
 
   async function capNhatSl(id, soluong) {
+    
     var res = await postMethod(
       "/api/gio-hang/cap-nhat-so-luong?idGioHang=" + id + "&soLuong=" + soluong
     );
@@ -300,7 +301,7 @@ function GioHang() {
                                 {" "}
                                 -{" "}
                               </button>
-                              <input value={item.soLuong} class="inputslcart" />
+                              <input value={item.soLuong} class="inputslcart"/>
                               <button
                                 onClick={() => capNhatSl(item.id, 1)}
                                 class="cartbtn"

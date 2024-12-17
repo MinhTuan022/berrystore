@@ -27,6 +27,20 @@ const AdminAddPhieuGiamGia = () => {
         var result = await response.json();
         setItem(result);
         console.log("result", result);
+      } else {
+        // Tạo mã sản phẩm mới khi thêm sản phẩm
+        try {
+          var response = await getMethod("/api/phieu-giam-gia");
+          var listResult = await response.json();
+
+          const maMoi = `PGG${String(Number(listResult.length) + 1).padStart(
+            3,
+            "0"
+          )}`;
+          setItem((prev) => ({ ...prev, maCode: maMoi }));
+        } catch (error) {
+          toast.error("Không thể tạo mã sản phẩm mới.");
+        }
       }
     };
     getPhieuGiamGia();
@@ -52,7 +66,7 @@ const AdminAddPhieuGiamGia = () => {
       nguoiCapNhat: user.maNhanVien,
       trangThai: event.target.elements.trangThai.value,
     };
-console.log('pgg', payload);
+    console.log("pgg", payload);
     // Kiểm tra các trường không được trống
     if (!payload.maCode) {
       toast.error("Mã code không được để trống.");

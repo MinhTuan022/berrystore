@@ -55,12 +55,16 @@ public class HoaDonChiTietController {
         for(HoaDonChiTiet h : list){
             if(h.getSanPhamChiTiet().getId() == chiTietSp){
                 check = true;
-//                h.setSoLuong((short) (soLuong.shortValue() + h.getSoLuong()));
+                h.setSoLuong((short) (soLuong.shortValue() + h.getSoLuong()));
                 Short sl =(short) (soLuong.shortValue() + h.getSoLuong());
                 if(sl > sanPhamChiTiet.getSoLuong()){
-                    throw new MessageException("Bạn chỉ được thêm "+(sanPhamChiTiet.getSoLuong()-h.getSoLuong())+" nữa");
+//                    int check_sl = sanPhamChiTiet.getSoLuong()-h.getSoLuong() < 0 ? 0 : sanPhamChiTiet.getSoLuong()-h.getSoLuong();
+//                    throw new MessageException("Bạn chỉ được thêm "+(check_sl)+" nữa");
+                    h.setSoLuong(soLuong.shortValue());
+                    hoaDonChiTietRepository.save(h);
+                    break;
                 }
-                h.setSoLuong(sl);
+//                h.setSoLuong(sl);
                 hoaDonChiTietRepository.save(h);
                 break;
             }
@@ -74,7 +78,6 @@ public class HoaDonChiTietController {
             hoaDonChiTiet.setGiaSanPham(new BigDecimal(sanPhamChiTiet.getGiaTien()));
             hoaDonChiTietRepository.save(hoaDonChiTiet);
         }
-        sanPhamChiTietService.update_quality_detail_product(chiTietSp, soLuong, 0);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -86,17 +89,21 @@ public class HoaDonChiTietController {
         }
         hoaDonChiTiet.setSoLuong((short) (hoaDonChiTiet.getSoLuong() + soLuong.shortValue()));
         hoaDonChiTietRepository.save(hoaDonChiTiet);
-        sanPhamChiTietService.update_quality_detail_product(hoaDonChiTiet.getSanPhamChiTiet().getId(), soLuong, 0);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/updateSoLuongEnter")
     public ResponseEntity<?> updateSoLuong_enter(@RequestParam Integer id, @RequestParam Integer soLuong , @RequestParam Integer slold){
         HoaDonChiTiet hoaDonChiTiet = hoaDonChiTietRepository.findById(id).get();
+//        sanPhamChiTietService.update_quality_detail_product(hoaDonChiTiet.getSanPhamChiTiet().getId(), 0, -slold);
         if(soLuong > hoaDonChiTiet.getSanPhamChiTiet().getSoLuong()){
             throw new MessageException("Số lượng không được vượt quá "+hoaDonChiTiet.getSanPhamChiTiet().getSoLuong());
         }
-        sanPhamChiTietService.update_quality_detail_product(hoaDonChiTiet.getSanPhamChiTiet().getId(), -slold, soLuong);
+        if(soLuong == hoaDonChiTiet.getSanPhamChiTiet().getSoLuong()){
+
+        }
+
+//        sanPhamChiTietService.update_quality_detail_product(hoaDonChiTiet.getSanPhamChiTiet().getId(), -slold, soLuong);
         hoaDonChiTiet.setSoLuong(soLuong.shortValue());
         hoaDonChiTietRepository.save(hoaDonChiTiet);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -106,7 +113,6 @@ public class HoaDonChiTietController {
     @DeleteMapping("/xoa-chi-tiet-don-cho")
     public ResponseEntity<?> xoa(@RequestParam Integer id){
         HoaDonChiTiet hoaDonChiTiet = hoaDonChiTietRepository.findById(id).get();
-        sanPhamChiTietService.update_quality_detail_product(hoaDonChiTiet.getSanPhamChiTiet().getId(), -hoaDonChiTiet.getSoLuong(), 0);
         hoaDonChiTietRepository.deleteById(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }

@@ -18,15 +18,45 @@ const AdminSanPhamChiTiet = () => {
   const [items, setItems] = useState([]);
   const [kichco, setKichCo] = useState([]);
   const [mausac, setMauSac] = useState([]);
-  const [selectedKichCo, setSelectedKichCo] = useState(null);
+  const [selectedKichCo, setSelectedKichCo] = useState([]);
+  const [updateKichCo, setUpdateKichCo] = useState(null);
+
+  const [selectIdKichCo, setSelectIdKichCo] = useState([]);
+
   const [selectedMauSac, setSelectedMauSac] = useState(null);
   const [sanpham, setSanPham] = useState(null);
   const [item, setItem] = useState(null);
+  const [maSptc, setMaSptc] = useState("");
+  const [isUpdate, setIsUpdate] = useState(false);
   useEffect(() => {
     getChiTietSanPham();
     getSanPham();
     getSelect();
   }, []);
+
+  const genId = async (id) => {
+    try {
+      var uls = new URL(document.URL);
+      var sanpham = uls.searchParams.get("sanpham");
+      if (sanpham == null) {
+        window.location.href = "product";
+      }
+      var response = await getMethod(
+        "/api/san-pham-chi-tiet/findBySanPham?sanpham=" + sanpham
+      );
+      const listResult = await response.json();
+      console.log("sdgshgsdhgshs", listResult);
+
+      const maMoi = `${id}-${String(
+        Number(listResult.length) + 1
+      ).padStart(3, "0")}`;
+
+      setMaSptc(maMoi);
+      // setProduct((prev) => ({ ...prev, maSanPham: maMoi }));
+    } catch (error) {
+      toast.error("Không thể tạo mã sản phẩm mới.");
+    }
+  };
   const exportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(items);
     const workbook = XLSX.utils.book_new();
@@ -49,6 +79,7 @@ const AdminSanPhamChiTiet = () => {
       "/api/san-pham-chi-tiet/findBySanPham?sanpham=" + sanpham
     );
     var result = await response.json();
+
     setItems(result);
   }
 
@@ -57,6 +88,8 @@ const AdminSanPhamChiTiet = () => {
     var sanpham = uls.searchParams.get("sanpham");
     var response = await getMethod("/api/san-pham/" + sanpham);
     var result = await response.json();
+    console.log("sanpham", result);
+
     setSanPham(result);
   }
 
@@ -70,6 +103,7 @@ const AdminSanPhamChiTiet = () => {
   };
 
   function setItemSelect(item) {
+    setIsUpdate(true);
     setSelectedKichCo(item.kichCo);
     setSelectedMauSac(item.mauSac);
     setItem(item);
@@ -91,7 +125,109 @@ const AdminSanPhamChiTiet = () => {
     }
   }
 
+  const handleChangeSize = (selectedOptions) => {
+    if (isUpdate) {
+      setUpdateKichCo(selectedOptions);
+    } else {
+      const ids = selectedOptions.map((option) => option.id); // Lấy mảng id
+      setSelectedKichCo(selectedOptions);
+      setSelectIdKichCo(ids);
+
+      console.log("Selected Kích Cỡ IDs:", selectedOptions);
+    }
+  };
+
   async function saveData(event) {
+    event.preventDefault();
+    setIsUpdate(false);
+
+    // Lấy thông tin người dùng từ localStorage
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) {
+      toast.error("Người dùng không hợp lệ.");
+      return;
+    }
+
+    // Lấy các giá trị từ form
+    const maSanPhamChiTiet = maSptc.trim();
+    const soLuong = parseInt(event.target.elements.soLuong.value, 10);
+    const giaTien = parseFloat(event.target.elements.giaTien.value);
+    const trangThai = event.target.elements.trangThai.value; // Lấy giá trị từ radio button
+
+    // Kiểm tra giá trị nhập vào
+    if (!maSanPhamChiTiet) {
+      toast.error("Mã sản phẩm chi tiết không được để trống.");
+      return;
+    }
+    if (isNaN(soLuong) || soLuong <= 0 || soLuong >= 1000000) {
+      toast.error(
+        "Số lượng phải là một số hợp lệ và lớn hơn 0 và nhỏ hơn 1.000.000"
+      );
+      return;
+    }
+    if (isNaN(giaTien) || giaTien <= 0 || giaTien >= 1000000000) {
+      toast.error(
+        "Giá tiền phải là một số hợp lệ và lớn hơn 0 và nhỏ hơn 1.000.000.000"
+      );
+      return;
+    }
+    if (!trangThai || (trangThai !== "1" && trangThai !== "2")) {
+      toast.error(
+        "Trạng thái không hợp lệ. Vui lòng chọn Còn hàng hoặc Hết hàng."
+      );
+      return;
+    }
+    if (!selectIdKichCo) {
+      toast.error("Vui lòng chọn kích cỡ.");
+      return;
+    }
+    if (!selectedMauSac?.id) {
+      toast.error("Vui lòng chọn màu sắc.");
+      return;
+    }
+
+    // Tạo payload
+    const payload = {
+      maSanPhamChiTiet,
+      soLuong,
+      giaTien,
+      idSanPham: sanpham.id,
+      idKichCo: selectIdKichCo,
+      idMauSac: selectedMauSac.id,
+      trangThai: parseInt(trangThai, 10), // Chuyển thành số nguyên
+      nguoiTao: user.maNhanVien,
+      nguoiCapNhat: user.maNhanVien,
+    };
+
+    // Nếu đang cập nhật, giữ nguyên người tạo ban đầu
+    if (item != null) {
+      payload.nguoiTao = item.nguoiTao;
+    }
+
+    // Xác định URL
+    let url = "/api/san-pham-chi-tiet";
+    if (item != null) {
+      url += "/" + item.id;
+    }
+
+    // Gửi payload qua API
+    const res = await postMethodPayload(url, payload);
+
+    // Xử lý phản hồi
+    if (res.status < 300) {
+      toast.success("Thành công!");
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      window.location.reload();
+    } else if (res.status === 417) {
+      const result = await res.json();
+      toast.error(result.defaultMessage);
+    } else if (res.status > 300) {
+      const result = await res.json();
+      toast.error(result.message);
+    }
+  }
+
+  async function updateData(event) {
     event.preventDefault();
 
     // Lấy thông tin người dùng từ localStorage
@@ -131,7 +267,7 @@ const AdminSanPhamChiTiet = () => {
       );
       return;
     }
-    if (!selectedKichCo?.id) {
+    if (!selectIdKichCo) {
       toast.error("Vui lòng chọn kích cỡ.");
       return;
     }
@@ -146,7 +282,7 @@ const AdminSanPhamChiTiet = () => {
       soLuong,
       giaTien,
       idSanPham: sanpham.id,
-      idKichCo: selectedKichCo.id,
+      idKichCo: updateKichCo.id,
       idMauSac: selectedMauSac.id,
       trangThai: parseInt(trangThai, 10), // Chuyển thành số nguyên
       nguoiTao: user.maNhanVien,
@@ -159,10 +295,10 @@ const AdminSanPhamChiTiet = () => {
     }
 
     // Xác định URL
-    let url = "/api/san-pham-chi-tiet";
-    if (item != null) {
-      url += "/" + item.id;
-    }
+    let url = "/api/san-pham-chi-tiet/update";
+    // if (item != null) {
+    url += "/" + item.id;
+    // }
 
     // Gửi payload qua API
     const res = await postMethodPayload(url, payload);
@@ -226,7 +362,12 @@ const AdminSanPhamChiTiet = () => {
         <div class="search-wrapper d-flex align-items-center">
           <div class="search-container"></div>
           <button
-            onClick={() => setItem(null)}
+            onClick={() => {
+              genId(sanpham.maSanPham);
+
+              setIsUpdate(false);
+              setItem(null);
+            }}
             data-bs-toggle="modal"
             data-bs-target="#addcate"
             class="btn btn-primary ms-2"
@@ -252,7 +393,6 @@ const AdminSanPhamChiTiet = () => {
               <tr>
                 <th>Id</th>
                 <th>Ảnh</th>
-                <th>Qr</th>
                 <th>Mã chi tiết</th>
                 <th>Kích cỡ</th>
                 <th>Màu sắc</th>
@@ -276,9 +416,6 @@ const AdminSanPhamChiTiet = () => {
                       ) : (
                         <img src={item.anhs[0].tenAnh} className="imgtable" />
                       )}
-                    </td>
-                    <td>
-                      <img src={item.qrCode} className="imgtable" />
                     </td>
                     <td>{item.maSanPhamChiTiet}</td>
                     <td>{item.kichCo?.tenKichCo}</td>
@@ -353,12 +490,12 @@ const AdminSanPhamChiTiet = () => {
             <div class="modal-body">
               <form
                 class="col-sm-5 marginauto"
-                onSubmit={saveData}
+                onSubmit={isUpdate ? updateData : saveData}
                 method="post"
               >
                 <label class="lb-form">Mã sản phẩm chi tiết</label>
                 <input
-                  defaultValue={item?.maSanPhamChiTiet}
+                  value={maSptc || "q"}
                   name="maSanPhamChiTiet"
                   type="text"
                   class="form-control"
@@ -414,11 +551,12 @@ const AdminSanPhamChiTiet = () => {
                 <Select
                   className="select-container"
                   options={kichco}
-                  value={selectedKichCo}
-                  onChange={setSelectedKichCo}
+                  value={isUpdate ? updateKichCo : selectedKichCo}
+                  onChange={handleChangeSize}
                   getOptionLabel={(option) => option.tenKichCo}
                   getOptionValue={(option) => option.id}
                   name="kichco"
+                  isMulti={isUpdate ? false : true}
                   placeholder="Chọn kích cỡ"
                 />
                 <br />

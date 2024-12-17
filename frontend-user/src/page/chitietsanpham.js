@@ -206,7 +206,6 @@ function ChiTietSanPham() {
                         data-bs-target="#carouselExampleControls"
                         data-bs-slide="prev"
                       >
-                        
                         <span
                           class="carousel-control-prev-icon"
                           aria-hidden="true"
@@ -219,7 +218,6 @@ function ChiTietSanPham() {
                         data-bs-slide="next"
                       >
                         <span
-                        
                           class="carousel-control-next-icon"
                           aria-hidden="true"
                         ></span>
@@ -273,43 +271,56 @@ function ChiTietSanPham() {
                         Lựa chọn kích thước
                       </span>
                     )}
-                    <div class="listsize row" id="listcolor">
+                    <div
+                      class="listsize"
+                      id="listcolor"
+                      style={{
+                        position: "relative",
+                      }}
+                    >
                       {kichthuoc.map((item, index) => {
                         const divClass = `${
                           item.soLuong === 0 ? "colorcdiv hetsp" : "colorcdiv"
                         } ${index === indexkichthuoc ? "activecolor" : ""}`;
                         return (
-                          <div>
-                            <div
-                              className="col-lg-3 col-md-3 col-sm-6 col-6"
-                              key={index}
-                            >
+                          <>
+                            <div>
                               <div
-                                className={divClass}
-                                onClick={() => {
-                                  setGiaTien(item?.giaTien);
-                                  if (item.soLuong > 0) {
-                                    setChiTietSpChon(item, index);
-                                  }
-                                }}
+                                className="col-lg-3 col-md-3 col-sm-6 col-6"
+                                key={index}
                               >
-                                <span className="storagedetail">
-                                  {item.kichCo.tenKichCo}
-                                </span>
-                                <br />
-                                {/* <span className="pricestorage">{formatMoney(item.giaTien)}</span> */}
+                                <div
+                                  className={divClass}
+                                  onClick={() => {
+                                    setGiaTien(item?.giaTien);
+                                    if (item.soLuong > 0) {
+                                      setChiTietSpChon(item, index);
+                                    }
+                                  }}
+                                >
+                                  <span className="storagedetail">
+                                    {item.kichCo.tenKichCo}
+                                  </span>
+                                  <br />
+                                  {/* <span className="pricestorage">{formatMoney(item.giaTien)}</span> */}
+                                </div>
                               </div>
                             </div>
-                            <div className="mt-2" style={{ fontSize: "12px" }}>
-                              Còn:{" "}
-                              <span
-                                style={{ color: "green", fontWeight: "800" }}
+                            {index === indexkichthuoc && (
+                              <div
+                                className="mt-2 sanphamcon"
+                                style={{ fontSize: "12px" }}
                               >
-                                {item.soLuong}
-                              </span>{" "}
-                              sản phẩm
-                            </div>
-                          </div>
+                                Còn:{" "}
+                                <span
+                                  style={{ color: "green", fontWeight: "800" }}
+                                >
+                                  {item.soLuong}
+                                </span>{" "}
+                                sản phẩm
+                              </div>
+                            )}
+                          </>
                         );
                       })}
                     </div>
@@ -390,7 +401,10 @@ function ChiTietSanPham() {
                             <a href={"chitietsanpham?id=" + item.id}>
                               <div className="productimg-container">
                                 <img
-                                  src={item.sanPhamChiTiets[0]?.anhs[0]?.tenAnh || ""}
+                                  src={
+                                    item.sanPhamChiTiets[0]?.anhs[0]?.tenAnh ||
+                                    ""
+                                  }
                                   class="productimg"
                                 />
                               </div>

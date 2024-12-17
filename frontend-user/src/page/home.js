@@ -23,6 +23,7 @@ function Home() {
   const [sanPhamMoi, setSanPhamMoi] = useState([]);
   const [itemBlog, setItemBlog] = useState([]);
   const [pageCount, setpageCount] = useState(0);
+  // const [dotGiamgia, setDotGiamgia] = useState(0);
 
   useEffect(() => {
     const getSelect = async () => {
@@ -39,7 +40,8 @@ function Home() {
       "/api/san-pham/public/all?&size=" + size + "&sort=id,desc&page=" + 0
     );
     var result = await response.json();
-    console.log(result);
+    console.log("???sdf", result);
+
     setSanPhamMoi(result.content);
     setpageCount(result.totalPages);
     url = "/api/san-pham/public/all?&size=" + size + "&sort=id,desc&page=";
@@ -107,13 +109,17 @@ function Home() {
                 Sản phẩm mới <img src={newitem} />
               </h5>
             </div>
-            <hr/>
+            <hr />
             <div id="sanphammoinhat" class="listproduct row">
               {sanPhamMoi.map((item) => {
                 var linkanh = "";
                 var giaban = 0;
+                var dotGiamGia = null;
                 if (item.sanPhamChiTiets.length > 0) {
                   giaban = item.sanPhamChiTiets[0].giaTien;
+                  if (item.sanPhamChiTiets[0].dotGiamGia != null) {
+                    dotGiamGia = item.sanPhamChiTiets[0].dotGiamGia;
+                  }
                 }
                 for (var i = 0; i < item.sanPhamChiTiets.length; i++) {
                   if (
@@ -149,10 +155,37 @@ function Home() {
                             {item.tenSanPham}
                           </a>
                         </p>
-                        <div class="priceproduct">
-                          <strong class="newprice">
-                            {formatMoney(giaban)}
-                          </strong>
+                        <div class="price-view">
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "30px",
+                              justifyContent: "center",
+                              alignItems: "center",
+                            }}
+                            class="priceproduct"
+                          >
+                            <strong class="newprice">
+                              {formatMoney(giaban)}
+                            </strong>
+                            {dotGiamGia == null ? (
+                              ""
+                            ) : (
+                              <strong class="oldprice">
+                                {formatMoney(giaban + dotGiamGia.giaTriGiam)}
+                              </strong>
+                            )}
+                          </div>
+                          {/* <div class="priceproduct">
+                            <strong class="newprice">
+                              {formatMoney(giaban)}
+                            </strong>
+                          </div>
+                          <div class="priceproduct">
+                            <strong class="oldprice">
+                              {formatMoney(giaban)}
+                            </strong>
+                          </div> */}
                         </div>
                       </div>
                     </div>

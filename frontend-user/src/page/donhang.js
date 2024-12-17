@@ -10,7 +10,7 @@ import {
 import { formatMoney } from "../services/money";
 import Select from "react-select";
 import { toast } from "react-toastify";
-
+// import rac from "../assest/images/"
 function DonHang() {
   const [donhang, setDonHang] = useState([]);
   const [trangThai, setTrangThai] = useState([]);
@@ -30,6 +30,8 @@ function DonHang() {
   const getDonHang = async () => {
     var response = await getMethod("/api/v1/hoa-don/hoa-don-cua-toi");
     var list = await response.json();
+
+    console.log('sdfgsgegfa', list);
     setDonHang(list);
   };
 
@@ -53,6 +55,23 @@ function DonHang() {
     setItem(item);
   };
 
+
+  const huydonhang  = async (id) => {
+    var response = await postMethod(
+      "/api/v1/hoa-don/huy-don-hang?hoaDonId=" + id
+    );
+
+    // var res = await response.json();
+    // console.log("huy", res);
+    if (response.status < 300) {
+      toast.success("Thành công");
+      // getDonHang();
+    }
+    if (response.status == 417) {
+      var result = await response.json();
+      toast.error(result.defaultMessage);
+    }
+  }
   return (
     <>
       <div class="headeraccount">
@@ -70,6 +89,7 @@ function DonHang() {
               <th>Loại hóa đơn</th>
               <th>Ngày tạo</th>
               <th>Trạng thái</th>
+              <th>Hành động</th>
             </tr>
           </thead>
           <tbody>
@@ -85,9 +105,9 @@ function DonHang() {
                     {item.maHoaDon}
                   </td>
                   <td>
-                    Họ tên: {item.tenKhachHang}
+                    Họ tên: {item.khachHang.hoVaTen}
                     <br />
-                    Số điện thoại: {item.soDienThoai}
+                    Số điện thoại: {item.khachHang.soDienThoai}
                   </td>
                   <td>{item.diaChi}</td>
                   <td>{formatMoney(item.tongTien)}</td>
@@ -99,6 +119,16 @@ function DonHang() {
                   </td>
                   <td>{item.ngayTao}</td>
                   <td>{getTrangThai(item.trangThai, trangThai)}</td>
+                  <td>
+                    <button
+                      onClick={() => {
+                        huydonhang(item.id);
+                      }}
+                      class="delete-btn"
+                    >
+                      <i className="fa fa-times-circle"></i>
+                    </button>
+                  </td>
                 </tr>
               );
             })}

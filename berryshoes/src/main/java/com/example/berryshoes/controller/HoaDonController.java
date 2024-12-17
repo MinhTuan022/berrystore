@@ -115,7 +115,55 @@ public class HoaDonController {
         }
         return new ResponseEntity<>(HttpStatus.OK);
     }
+    @PostMapping("/huy-don-hang")
+    public ResponseEntity<?> huyDonHang(@RequestParam Integer hoaDonId, HttpServletRequest request) {
+        // Tìm hóa đơn
+        Optional<HoaDon> hoaDon = hoaDonRepository.findById(hoaDonId);
+        if (hoaDon.isEmpty()) {
+            throw new MessageException("Hóa đơn không tồn tại");
+        }
 
+        // Kiểm tra nếu đơn hàng đã bị hủy trước đó
+        if (hoaDon.get().getTrangThai() == 6) {
+            throw new MessageException("Đơn hàng đã bị hủy trước đó");
+        }
+
+        // Cập nhật trạng thái thành 6 (đã hủy)
+        if (hoaDon.get().getTrangThai() != 1 && hoaDon.get().getTrangThai() != 2 && hoaDon.get().getTrangThai() != 3){
+            throw new MessageException("Chỉ có thể hủy các được hàng chưa được gửi đi");
+
+        }
+
+        KhachHang khachHang = userUltis.getLoggedInKhachHang(request);
+        hoaDon.get().setTrangThai(6);
+        hoaDon.get().setLanCapNhatCuoi(new Timestamp(System.currentTimeMillis()));
+        hoaDon.get().setNguoiCapNhat(khachHang.getEmail());
+
+        // Hoàn lại số lượng sản phẩm trong kho
+        List<HoaDonChiTiet> hoaDonChiTiets = hoaDon.get().getHoaDonChiTiets();
+        for (HoaDonChiTiet chiTiet : hoaDonChiTiets) {
+            chiTiet.getSanPhamChiTiet().setSoLuong(
+                    chiTiet.getSanPhamChiTiet().getSoLuong() + chiTiet.getSoLuong()
+            );
+            sanPhamChiTietRepository.save(chiTiet.getSanPhamChiTiet());
+        }
+
+        // Lưu lịch sử hủy đơn hàng
+        LichSuHoaDon lichSuHoaDon = new LichSuHoaDon();
+        lichSuHoaDon.setHoaDon(hoaDon.get());
+        lichSuHoaDon.setNguoiCapNhat(khachHang.getEmail());
+        lichSuHoaDon.setTrangThai(6);
+        lichSuHoaDon.setLanCapNhatCuoi(new Timestamp(System.currentTimeMillis()));
+        lichSuHoaDon.setNhanVien(null);
+        lichSuHoaDon.setNgayTao(new Timestamp(System.currentTimeMillis()));
+        lichSuHoaDonRepository.save(lichSuHoaDon);
+
+        // Lưu hóa đơn cập nhật vào database
+        hoaDonRepository.save(hoaDon.get());
+
+
+        return new ResponseEntity<>("Đơn hàng đã được hủy thành công", HttpStatus.OK);
+    }
     @GetMapping("/danh-sach-trang-thai")
     public ResponseEntity<?> viewListTrangThai(){
         return new ResponseEntity<>(TrangThai.initTrangThais(),HttpStatus.OK);
@@ -241,7 +289,6 @@ public class HoaDonController {
         Integer phiShip = (Integer) data.get("service_fee");
         tong = tong + phiShip - tienGiam;
 
-        tong = Math.max(tong, 0);
         HoaDon hoaDon = new HoaDon();
         hoaDon.setMaHoaDon(String.valueOf(System.currentTimeMillis()));
         hoaDon.setLoaiHoaDon(true);
@@ -374,17 +421,17 @@ public class HoaDonController {
     public ResponseEntity<?> xacNhanDatHang(@RequestParam Integer idHoaDon){
         HoaDon hoaDon = hoaDonRepository.findById(idHoaDon).get();
         Double tongTien = 0D;
-//        for(HoaDonChiTiet hc : hoaDon.getHoaDonChiTiets()){
-//            if(hc.getSanPhamChiTiet().getSoLuong() < hc.getSoLuong()){
-//                throw new MessageException("Số lượng sản phẩm "+hc.getSanPhamChiTiet().getSanPham().getTenSanPham()+" - màu "+hc.getSanPhamChiTiet().getMauSac().getTenMauSac()+" - size: "+hc.getSanPhamChiTiet().getKichCo().getTenKichCo()+" chỉ còn: "+ hc.getSanPhamChiTiet().getSoLuong());
-//            }
-//        }
+        for(HoaDonChiTiet hc : hoaDon.getHoaDonChiTiets()){
+            if(hc.getSanPhamChiTiet().getSoLuong() < hc.getSoLuong()){
+                throw new MessageException("Số lượng sản phẩm "+hc.getSanPhamChiTiet().getSanPham().getTenSanPham()+" - màu "+hc.getSanPhamChiTiet().getMauSac().getTenMauSac()+" - size: "+hc.getSanPhamChiTiet().getKichCo().getTenKichCo()+" chỉ còn: "+ hc.getSanPhamChiTiet().getSoLuong());
+            }
+        }
         for(HoaDonChiTiet hc : hoaDon.getHoaDonChiTiets()){
             hc.getSanPhamChiTiet().setSoLuong(hc.getSanPhamChiTiet().getSoLuong() - hc.getSoLuong());
             sanPhamChiTietRepository.save(hc.getSanPhamChiTiet());
             tongTien += hc.getSoLuong() * hc.getSanPhamChiTiet().getGiaTien();
 //            hc.getSanPhamChiTiet().setSoLuong(hc.getSanPhamChiTiet().getSoLuong() - hc.getSoLuong());
-//            sanPhamChiTietRepository.save(hc.getSanPhamChiTiet());
+            sanPhamChiTietRepository.save(hc.getSanPhamChiTiet());
         }
         hoaDon.setTrangThai(8);
         hoaDon.setTongTien(new BigDecimal(tongTien));

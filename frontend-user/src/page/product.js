@@ -221,7 +221,7 @@ function Product() {
                 style={{
                   backgroundColor: "rgb(236, 221, 198)",
                   color: "#212529",
-                  borderColor:"rgb(236, 221, 198)"
+                  borderColor: "rgb(236, 221, 198)",
                 }}
                 onClick={() => filterProduct()}
                 className="form-control btn btn-primary"
@@ -242,7 +242,7 @@ function Product() {
                         <a href={"chitietsanpham?id=" + item.id}>
                           <div className="productimg-container">
                             <img
-                              src={item.sanPhamChiTiets[0].anhs[0].tenAnh}
+                              src={item?.sanPhamChiTiets[0]?.anhs[0]?.tenAnh}
                               class="productimg"
                             />
                           </div>

@@ -200,6 +200,14 @@ const AdminDonHang = () => {
         <div class="search-wrapper d-flex align-items-center">
           <div className="d-flex divngayadmin">
             <div className="trangthailist">
+              <div
+                onClick={() => locDonHang("")}
+                className={`trangthaiitem ${
+                  !selectTrangThai && "selected"
+                }`}
+              >
+                Tất Cả
+              </div>
               {trangThai &&
                 trangThai.map((a, index) => (
                   <div
@@ -265,7 +273,7 @@ const AdminDonHang = () => {
             </thead>
             <tbody>
               {items.map((item) => {
-                console.log('donhang', item);
+                console.log("donhang", item);
                 return (
                   <tr>
                     <td
@@ -297,9 +305,7 @@ const AdminDonHang = () => {
                         ? ""
                         : item.khachHang.soDienThoai}
                     </td>
-                    <td>
-                      {item.khachHang === null ? "" : item.diaChi}
-                    </td>
+                    <td>{item.khachHang === null ? "" : item.diaChi}</td>
                     <td>{formatMoney(item.tongTien)}</td>
                     <td>{formatMoney(item.phiVanChuyen)}</td>
                     <td>
@@ -328,7 +334,7 @@ const AdminDonHang = () => {
                         ) : (
                           ""
                         )}
-                        {item.trangThai < 5 ? (
+                        {item.trangThai < 4 ? (
                           <button
                             onClick={() => capNhatTT(item.id, item.trangThai)}
                             class="delete-btn"

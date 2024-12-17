@@ -1,6 +1,7 @@
 package com.example.berryshoes.controller;
 
 import com.example.berryshoes.dto.request.ChiTietSpSearch;
+import com.example.berryshoes.dto.request.SanPhamChiTietUpdateRequest;
 import com.example.berryshoes.dto.request.SearchDto;
 import com.example.berryshoes.dto.response.SanPhamChiTietSpecification;
 import com.example.berryshoes.dto.response.SanPhamSpecification;
@@ -14,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,17 +52,40 @@ public class SanPhamChiTietController {
 
     // Tạo mới chi tiết sản phẩm
     @PostMapping
-    public ResponseEntity<SanPhamChiTiet> createSanPhamChiTiet(@RequestBody SanPhamChiTietRequest requestDTO) {
-        SanPhamChiTiet createdSanPhamChiTiet = sanPhamChiTietService.create(requestDTO);
-        return ResponseEntity.ok(createdSanPhamChiTiet);
+    public ResponseEntity<List<SanPhamChiTiet>> createSanPhamChiTiet(@RequestBody SanPhamChiTietRequest requestDTO) {
+        List<SanPhamChiTiet> createdSanPhamChiTietList = new ArrayList<>();
+
+        for (Integer idKichCo : requestDTO.getIdKichCo()) {
+            SanPhamChiTietRequest singleRequest = new SanPhamChiTietRequest();
+            singleRequest.setMaSanPhamChiTiet(requestDTO.getMaSanPhamChiTiet());
+            singleRequest.setQrCode(requestDTO.getQrCode());
+            singleRequest.setSoLuong(requestDTO.getSoLuong());
+            singleRequest.setGiaTien(requestDTO.getGiaTien());
+            singleRequest.setMoTa(requestDTO.getMoTa());
+            singleRequest.setIdSanPham(requestDTO.getIdSanPham());
+            singleRequest.setIdKichCo(Collections.singletonList(idKichCo));
+            singleRequest.setIdMauSac(requestDTO.getIdMauSac());
+            singleRequest.setIdDotGiamGia(requestDTO.getIdDotGiamGia());
+            singleRequest.setNguoiTao(requestDTO.getNguoiTao());
+            singleRequest.setNguoiCapNhat(requestDTO.getNguoiCapNhat());
+            singleRequest.setTrangThai(requestDTO.getTrangThai());
+
+            // Gọi service để tạo từng SanPhamChiTiet
+            SanPhamChiTiet created = sanPhamChiTietService.create(singleRequest);
+            createdSanPhamChiTietList.add(created);
+        }
+
+        return ResponseEntity.ok(createdSanPhamChiTietList);
     }
 
+
     // Cập nhật chi tiết sản phẩm
-    @PostMapping("/{id}")
-    public ResponseEntity<SanPhamChiTiet> updateSanPhamChiTiet(@PathVariable Integer id, @RequestBody SanPhamChiTietRequest requestDTO) {
+    @PostMapping("/update/{id}")
+    public ResponseEntity<SanPhamChiTiet> updateSanPhamChiTiet(@PathVariable Integer id, @RequestBody SanPhamChiTietUpdateRequest requestDTO) {
         SanPhamChiTiet updatedSanPhamChiTiet = sanPhamChiTietService.update(id, requestDTO);
         return updatedSanPhamChiTiet != null ? ResponseEntity.ok(updatedSanPhamChiTiet) : ResponseEntity.notFound().build();
     }
+
 
     // Xóa chi tiết sản phẩm
     @DeleteMapping("/{id}")
