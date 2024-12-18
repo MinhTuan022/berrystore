@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import {
   getMethod,
@@ -19,7 +19,9 @@ import { Modal, Button } from "react-bootstrap";
 import { Nav } from "react-bootstrap"; // Import Nav
 import { FaTimesCircle, FaCreditCard } from "react-icons/fa";
 import { InputGroup, Form } from "react-bootstrap";
-
+import Invoice from "./invoice";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 const AdminDatTaiQuay = () => {
   const [hoaDonCho, sethoaDonCho] = useState([]);
   const [khachHang, setKhachHang] = useState([]);
@@ -66,11 +68,33 @@ const AdminDatTaiQuay = () => {
   // Khai báo state cho searchKeyword
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filteredSanPham, setFilteredSanPham] = useState([]); // Sản phẩm đã lọc
+  const [dataInvoice, setDataInvoice] = useState();
+  const invoiceRef = useRef(null);
 
+  const handlePDF = async () => {
+    const element = invoiceRef.current;
+    if (!element) return;
+
+    // Tạo PDF từ nội dung hóa đơn
+    const canvas = await html2canvas(element, { scale: 3 });
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+
+    // Tạo tên file động theo mã hóa đơn và ngày
+    const fileName = `hoa_don_${new Date()
+      .toLocaleDateString("vi-VN")
+      .replace(/\//g, "-")}.pdf`;
+    pdf.save(fileName);
+  };
   // useEffect để lọc sản phẩm khi searchKeyword thay đổi
   useEffect(() => {
     const filtered = chiTietSanPham.filter(
       (item) =>
+        item.soLuong > 0 &&
         item.sanPham?.tenSanPham
           ?.toLowerCase()
           .includes(searchKeyword.toLowerCase()) // So khớp từ khóa tìm kiếm
@@ -190,22 +214,49 @@ const AdminDatTaiQuay = () => {
   async function loadDotGiamGia(hoadoncho) {
     var response = await getMethod("/api/phieu-giam-gia");
     var result = await response.json();
-    var response = await getMethod("/api/v1/hoa-don/hoa-don-cho");
-    var list = await response.json();
 
-    setdotGiamGia(result.filter((x) => x.trangThai === 1));
+    var responseHoaDon = await getMethod("/api/v1/hoa-don/hoa-don-cho");
+    var list = await responseHoaDon.json();
+
+    // Thêm giá trị mặc định vào đầu danh sách phiếu giảm giá
+    const defaultDiscount = {
+      tenPhieu: "Chọn phiếu giảm giá",
+      id: 0,
+      loaiPhieu: false,
+      giaTriGiam: 0,
+    };
+
+    // Cập nhật danh sách phiếu giảm giá với giá trị mặc định
+    const discountList = [
+      defaultDiscount,
+      ...result.filter((x) => x.trangThai === 1),
+    ];
+    setdotGiamGia(discountList);
+
+    // Kiểm tra và chọn giá trị mặc định nếu không có phiếu giảm giá trong hóa đơn
     if (selectHoaDonCho == null) {
       if (list.length > 0) {
         if (list[0].phieuGiamGia != null) {
           setSelecDotGiamGia(list[0].phieuGiamGia);
-        } else setSelecDotGiamGia(result[0]);
+        } else {
+          setSelecDotGiamGia(defaultDiscount); // Chọn giá trị mặc định nếu không có phiếu giảm giá
+        }
       }
-    }
+    } 
+    // else if(selectHoaDonCho.id == 0){
+    //   setSelecDotGiamGia(prevState => ({
+    //     ...prevState,
+    //     giamGia: 0, // Chỉ thay đổi giá trị giamGia
+    //   }));
+
+    // }
+
+    // Xử lý khi có `hoadoncho` được truyền vào
     if (hoadoncho != null) {
-      if (hoadoncho != null) {
-        if (hoadoncho.phieuGiamGia != null) {
-          setSelecDotGiamGia(hoadoncho.phieuGiamGia);
-        } else setSelecDotGiamGia(result[0]);
+      if (hoadoncho.phieuGiamGia != null) {
+        setSelecDotGiamGia(hoadoncho.phieuGiamGia);
+      } else {
+        setSelecDotGiamGia(defaultDiscount); // Chọn giá trị mặc định nếu không có phiếu giảm giá
       }
     }
   }
@@ -214,6 +265,25 @@ const AdminDatTaiQuay = () => {
     var response = await getMethod("/api/v1/hoa-don/find-by-id?id=" + item.id);
     var result = await response.json();
     setSelectHoaDonCho(result);
+    const invoiceData = {
+      maHoaDon: result.maHoaDon,
+      nguoitao: result.nguoiTao,
+      date: result.ngayTao,
+      customerName: result.khachHang || "Khách Lẻ", // Tên khách hàng từ response hoặc từ dữ liệu có sẵn
+      // customerAddress: selectHoaDonCho.customerAddress, // Địa chỉ khách hàng
+      items: result.hoaDonChiTiets.map((item) => ({
+        name: item.sanPhamChiTiet?.sanPham.tenSanPham || "", // Tên sản phẩm
+        quantity: item.soLuong, // Số lượng sản phẩm
+        price: item.giaSanPham, // Đơn giá
+      })),
+      total: result.hoaDonChiTiets.reduce((total, item) => {
+        return total + item.soLuong * item.giaSanPham; // Tính tổng tiền của từng mặt hàng
+      }, 0),
+      // Giá trị khởi tạo là 0
+    };
+
+    console.log("àd", invoiceData);
+    setDataInvoice(invoiceData);
     if (result.khachHang != null) setselectKhachHang(result.khachHang);
     else setselectKhachHang({ id: -1, hoVaTen: "Khách lẻ", soDienThoai: "" });
     var tong = 0;
@@ -379,6 +449,9 @@ const AdminDatTaiQuay = () => {
       var result = await response.json();
       toast.warning(result.defaultMessage);
     }
+    console.log("cho", selectHoaDonCho);
+
+    handlePDF();
   };
 
   async function change_value(quality, hdct) {
@@ -469,13 +542,15 @@ const AdminDatTaiQuay = () => {
         (tong, sanPham) => tong + sanPham.giaSanPham * sanPham.soLuong,
         0
       );
+
+      console.log('há', selectHoaDonCho);
       let pgg = phigg;
       if (selectHoaDonCho.hoaDonChiTiets != null) {
         if (tongt >= pgg.donToiThieu) {
           if (pgg.loaiPhieu) {
             console.log("if");
 
-            setTongTien(tongt - Number(pgg.giaTriGiamToiDa));
+            setTongTien(tongt - Number(pgg.giaTriGiam));
           } else {
             console.log("else");
 
@@ -530,11 +605,14 @@ const AdminDatTaiQuay = () => {
     tienThua = "0";
     soTienThanhToan = "0";
   }
-
+  console.log("self", selectDotGiamGia);
   return (
-    <div style={{ marginBottom: "150px" }}>
+    <div style={{ marginBottom: "150px", boxSizing: "border-box" }}>
       {/* Header */}
-      <div className="headerpageadmin d-flex justify-content-between align-items-center p-3 bg-light border">
+      <div
+        className="headerpageadmin d-flex justify-content-between align-items-center p-3 bg-light border"
+        style={{ boxSizing: "border-box" }}
+      >
         <strong className="text-left">
           <i className="fa fa-list"></i> Bán hàng tại quầy
         </strong>
@@ -880,16 +958,15 @@ const AdminDatTaiQuay = () => {
                       <Select
                         className="select-container selectheader"
                         options={dotGiamGia}
-                        value={isChonPGG ? null : selectDotGiamGia}
+                        value={selectDotGiamGia}
                         onChange={(e) => {
-                          setIsChonPGG(true);
-                          setSelecDotGiamGia(e);
+                          change_dotGiamGia(e);
                         }}
                         getOptionLabel={(option) =>
-                          `${option.id} - ${option.tenPhieu}`
+                          option.id + " - " + option.tenPhieu
                         }
                         getOptionValue={(option) => option.id}
-                        placeholder="Chọn mã giảm giá"
+                        placeholder="Chọn phiếu giảm giá"
                         styles={{
                           container: (provided) => ({
                             ...provided,
@@ -932,15 +1009,10 @@ const AdminDatTaiQuay = () => {
                   <tr>
                     <th style={{ width: "30%" }}>Giảm giá</th>
                     <td>
-                      {formatMoney(
-                        selectHoaDonCho != null
-                          ? selectHoaDonCho.hoaDonChiTiets.reduce(
-                              (tong, sanPham) =>
-                                tong + sanPham.giaSanPham * sanPham.soLuong,
-                              0
-                            ) - tongTien
-                          : 0
-                      )}
+                      {selectDotGiamGia.loaiPhieu
+                        ? formatMoney(selectDotGiamGia.giaTriGiam)
+                        : `${selectDotGiamGia.giaTriGiam} %` ||
+                          "________________"}
                     </td>
                   </tr>
                   {/* Tổng tiền (sau khi áp dụng giảm giá) */}
@@ -996,6 +1068,19 @@ const AdminDatTaiQuay = () => {
               >
                 Xác nhận đặt hàng
               </button>
+              <div
+                style={{
+                  position: "absolute",
+                  top: "-9999px",
+                  left: "-9999px",
+                }}
+              >
+              <Invoice
+                ref={invoiceRef}
+                invoiceData={dataInvoice}
+                giamgia={selectDotGiamGia}
+              />
+              </div>
             </div>
           </div>
         </div>
